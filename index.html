@@ -7,14 +7,15 @@
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
   <style>
     :root {
-      --primary: #c9a9a6;
-      --primary-soft: #d4b5b2;
-      --primary-light: #f5eeee;
+      --primary: #6f6864;
+      --primary-soft: #8f8781;
+      --primary-light: #e9e5e2;
       --primary-bg: #FFE8F2;
+      --result-bg: rgba(255,232,242,0.30);
       --text: #1a1a1a;
-      --text-sub: #999;
+      --text-sub: #817a75;
       --bg: #fff;
-      --border: #eae8e7;
+      --border: #e3dfdc;
       --sidebar-w: 230px;
       --max-w: 1200px;
     }
@@ -23,7 +24,7 @@
       -webkit-tap-highlight-color: transparent;
       font-family: "Pretendard", -apple-system, sans-serif !important;
     }
-    body { margin: 0; background: #f5f5f5; color: var(--text); min-height: 100vh; }
+    body { margin: 0; background: #fff; color: var(--text); min-height: 100vh; }
 
     /* ═══ 중앙 컨테이너 ═══ */
     .page-center {
@@ -36,88 +37,67 @@
 
     /* ═══ 헤더 ═══ */
     .top-bar {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      padding: 14px max(24px, calc((100% - 748px) / 2));
       border-bottom: 1px solid var(--border);
       position: sticky; top: 0; z-index: 200;
       background: var(--bg);
     }
-    .menu-toggle {
-      border: none; background: none; cursor: pointer;
-      padding: 4px; display: flex; align-items: center;
-      color: #aaa; border-radius: 6px;
-      transition: background 0.15s;
-    }
-    .menu-toggle:hover { background: #f5f5f5; }
-    .menu-toggle svg { width: 22px; height: 22px; }
-    .top-logo { display: flex; align-items: center; gap: 12px; }
+    .top-logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
     .top-logo img { height: 36px; }
     .top-logo-text { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+
+    .branch-picker {
+      position: relative;
+      width: 130px;
+    }
+    .branch-picker input {
+      width: 100%; padding: 10px 12px;
+      border-radius: 9px; border: 1px solid var(--border);
+      font-size: 13px; font-weight: 600; outline: none;
+      color: var(--text); background: #fff;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .branch-picker input:focus {
+      border-color: #d5d5d5;
+      box-shadow: 0 0 0 3px rgba(111,104,100,0.08);
+      background: #fff;
+    }
+    .branch-picker input::placeholder { color: #aaa; font-weight: 500; }
+    .branch-picker input:-webkit-autofill,
+    .branch-picker input:-webkit-autofill:hover,
+    .branch-picker input:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--text);
+      -webkit-box-shadow: 0 0 0 1000px #fff inset;
+      box-shadow: 0 0 0 1000px #fff inset;
+      transition: background-color 9999s ease-out 0s;
+    }
+    .branch-dropdown {
+      display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      max-height: 300px; overflow-y: auto; padding: 5px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,0.08); z-index: 300;
+    }
+    .branch-dropdown.show { display: block; }
+    .branch-option {
+      display: block; width: 100%; padding: 9px 10px;
+      border: none; background: #fff; border-radius: 7px;
+      text-align: left; font-size: 13px; color: #555; cursor: pointer;
+    }
+    .branch-option:hover, .branch-option.active {
+  background: rgba(255, 232, 242, 0.3);
+  color: #5f5854;
+  font-weight: 700;
+}
 
     /* ═══ 레이아웃 ═══ */
     .layout { display: flex; min-height: calc(100vh - 57px); }
 
-    /* ═══ 사이드바 ═══ */
-    .sidebar {
-      width: var(--sidebar-w); min-width: var(--sidebar-w);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      height: calc(100vh - 57px);
-      position: sticky; top: 57px;
-      background: var(--bg);
-      transition: margin-left 0.25s ease, opacity 0.2s ease;
-      overflow: hidden;
-    }
-    .sidebar.collapsed {
-      margin-left: calc(var(--sidebar-w) * -1);
-      opacity: 0; pointer-events: none;
-    }
-    .sb-search { padding: 14px 14px 10px; }
-    .sb-search input {
-      width: 100%; padding: 9px 12px;
-      border-radius: 8px; border: 1.5px solid var(--border);
-      font-size: 13px; font-weight: 500; outline: none;
-      color: var(--text); background: #fafafa;
-      transition: border-color 0.2s;
-    }
-    .sb-search input:focus { border-color: var(--primary-soft); background: #fff; }
-    .sb-search input::placeholder { color: #aaa; }
-
-    .sb-section-label {
-      padding: 6px 16px;
-      font-size: 11px; font-weight: 700; color: var(--text-sub);
-      text-transform: uppercase; letter-spacing: 0.5px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .sb-count {
-      font-size: 10px; font-weight: 600;
-      background: #f0f0f0; color: #999;
-      padding: 1px 8px; border-radius: 10px;
-    }
-
-    .sb-list { flex: 1; overflow-y: auto; padding-bottom: 20px; }
-    .sb-item {
-      display: block; width: 100%;
-      padding: 9px 16px;
-      border: none; background: none;
-      font-size: 13px; font-weight: 500; color: #666;
-      cursor: pointer; text-align: left;
-      transition: all 0.1s;
-      border-left: 3px solid transparent;
-    }
-    .sb-item:hover { background: var(--primary-bg); color: #555; }
-    .sb-item.active {
-      background: var(--primary-bg);
-      color: #8b6f6b;
-      font-weight: 700;
-      border-left-color: var(--primary);
-    }
-    .sb-item.hidden { display: none; }
-
     /* ═══ 메인 ═══ */
     .main {
-      flex: 1; padding: 28px 36px;
-      max-width: 820px;
+      width: min(820px, 100%);
+      margin: 0 auto;
+      padding: 28px 36px;
       display: flex; flex-direction: column;
     }
 
@@ -158,6 +138,15 @@
       background: #fff;
     }
     .search-wrap input::placeholder { color: #aaa; font-weight: 400; }
+    /* 브라우저 검색기록/자동완성 선택 시에도 흰색 유지 */
+    .search-wrap input:-webkit-autofill,
+    .search-wrap input:-webkit-autofill:hover,
+    .search-wrap input:-webkit-autofill:focus {
+      -webkit-text-fill-color: var(--text);
+      -webkit-box-shadow: 0 0 0 1000px #fff inset;
+      box-shadow: 0 0 0 1000px #fff inset;
+      transition: background-color 9999s ease-out 0s;
+    }
     .s-icon {
       position: absolute; left: 15px; top: 50%;
       transform: translateY(-50%); width: 18px; height: 18px; color: #bbb;
@@ -189,10 +178,11 @@
     .toolbar-left { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .opt {
       display: flex; align-items: center; gap: 5px;
-      font-size: 13px; font-weight: 500; color: #888;
+      font-size: 13px; font-weight: 600; color: #666;
       cursor: pointer; user-select: none;
     }
-    .opt input { accent-color: #b0b0b0; width: 15px; height: 15px; margin: 0; }
+
+    .opt input { accent-color: #777; width: 15px; height: 15px; margin: 0; }
     .btn-copy {
       border: 1px solid #ddd; cursor: pointer;
       background: #fff; color: #555;
@@ -211,21 +201,21 @@
       border-radius: 12px; border: 1px solid var(--border);
       font-size: 13.5px; line-height: 1.9;
       resize: none; outline: none;
-      background: var(--primary-bg); color: var(--text);
+      background: var(--result-bg); color: var(--text);
       min-height: 320px;
     }
-    .result-box:focus { border-color: #e0e0e0; background: #fff; }
+    .result-box:focus { border-color: #e0e0e0; background: var(--result-bg); }
     .empty-state {
       flex: 1; display: flex; align-items: center; justify-content: center;
       color: #bbb; font-size: 14px;
       min-height: 320px; border-radius: 12px;
-      background: var(--primary-bg);
+      background: var(--result-bg);
     }
     .loading-box {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       min-height: 320px; color: var(--primary-soft);
-      font-size: 13px; gap: 12px; background: var(--primary-bg);
+      font-size: 13px; gap: 12px; background: var(--result-bg);
       border-radius: 12px;
     }
     .spinner {
@@ -254,19 +244,18 @@
     @media (max-width: 768px) {
       body { background: var(--bg); }
       .page-center { box-shadow: none; }
-      .sidebar {
-        position: fixed; left: 0; top: 57px;
-        height: calc(100vh - 57px);
-        z-index: 150; box-shadow: 4px 0 20px rgba(0,0,0,0.06);
+      .top-bar { padding: 12px 16px; gap: 12px; }
+      .top-logo { gap: 8px; }
+      .top-logo img { height: 32px; }
+      .top-logo-text { font-size: 15px; }
+      .branch-picker {
+        width: 45%;
+        margin-right: 0;
       }
-      .sidebar.collapsed { margin-left: calc(var(--sidebar-w) * -1); }
-      .sidebar-overlay {
-        display: none; position: fixed; inset: 0;
-        background: rgba(0,0,0,0.15); z-index: 140;
-      }
-      .sidebar-overlay.show { display: block; }
       .main { padding: 20px 16px; }
       .branch-name { font-size: 18px; }
+      .toolbar-left { gap: 12px; }
+      .opt { font-size: 12px; }
     }
   </style>
 </head>
@@ -274,29 +263,18 @@
 
 <div class="page-center">
   <div class="top-bar">
-    <button class="menu-toggle" onclick="toggleSidebar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
     <div class="top-logo">
       <img src="logo.png" alt="velyB">
       <span class="top-logo-text">시술금액 검색</span>
     </div>
+    <div class="branch-picker">
+      <input type="text" id="sbSearch" placeholder="지점명 검색" autocomplete="off"
+             oninput="filterBranches()" onfocus="showBranchDropdown()" onkeydown="handleBranchKey(event)">
+      <div class="branch-dropdown" id="branchDropdown"></div>
+    </div>
   </div>
 
   <div class="layout">
-    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-    <aside class="sidebar" id="sidebar">
-      <div class="sb-search">
-        <input type="text" id="sbSearch" placeholder="지점명 검색" oninput="filterSb()">
-      </div>
-      <div class="sb-section-label">
-        <span>전체 지점</span>
-        <span class="sb-count" id="sbCount">58</span>
-      </div>
-      <div class="sb-list" id="sbList"></div>
-    </aside>
-
     <div class="main">
       <div class="branch-header">
         <div class="branch-name" id="branchName">지점을 선택하세요</div>
@@ -323,9 +301,10 @@
 
       <div class="toolbar">
         <div class="toolbar-left">
-          <label class="opt"><input type="checkbox" id="keepParens" checked onchange="doSearch()"> 괄호속 텍스트 유지</label>
+          <label class="opt"><input type="checkbox" id="keepParens" checked onchange="doSearch()"> 괄호 속 텍스트 유지</label>
           <label class="opt"><input type="checkbox" id="excludeOption" checked onchange="doSearch()"> 옵션 시술 제외</label>
           <label class="opt"><input type="checkbox" id="vatLine" checked onchange="doSearch()"> 부가세 안내</label>
+          <label class="opt"><input type="checkbox" id="excludePrime" checked onchange="doSearch()"> 프라임타임 이벤트 제외</label>
         </div>
         <button class="btn-copy hidden" id="copyBtn" onclick="copyResults()">결과복사</button>
       </div>
@@ -358,42 +337,60 @@
     "평택점","포항점","하남 미사점","홍대점"
   ];
 
-  var BK='velyb_branch', currentBranch='', allTreatments=[], sidebarOpen=true;
+  var BK='velyb_branch', currentBranch='', allTreatments=[];
+
   function ck(b){return 'vd_'+b;} function tk(b){return 'vt_'+b;}
 
-  function toggleSidebar(){
-    sidebarOpen=!sidebarOpen;
-    document.getElementById('sidebar').classList.toggle('collapsed',!sidebarOpen);
-    document.getElementById('overlay').classList.toggle('show',sidebarOpen&&window.innerWidth<=768);
-  }
-
-  function buildSb(){
-    var list=document.getElementById('sbList'); list.innerHTML='';
-    document.getElementById('sbCount').textContent=ALL_BRANCHES.length;
-    ALL_BRANCHES.forEach(function(b){
+  function buildBranchDropdown(q){
+    var box=document.getElementById('branchDropdown');
+    var query=(q||'').trim().toLowerCase();
+    var matches=ALL_BRANCHES.filter(function(b){
+      return !query || b.toLowerCase().indexOf(query)!==-1;
+    });
+    box.innerHTML='';
+    matches.forEach(function(b){
       var btn=document.createElement('button');
-      btn.className='sb-item'+(b===currentBranch?' active':'');
-      btn.textContent=b; btn.setAttribute('data-b',b);
-      btn.onclick=function(){pickBranch(b);if(window.innerWidth<=768)toggleSidebar();};
-      list.appendChild(btn);
+      btn.type='button';
+      btn.className='branch-option'+(b===currentBranch?' active':'');
+      btn.textContent=b;
+      btn.onclick=function(){pickBranch(b);};
+      box.appendChild(btn);
     });
+    if(matches.length) box.classList.add('show');
+    else box.classList.remove('show');
   }
 
-  function filterSb(){
-    var q=document.getElementById('sbSearch').value.trim().toLowerCase(), v=0;
-    document.querySelectorAll('.sb-item').forEach(function(el){
-      var m=!q||el.getAttribute('data-b').toLowerCase().indexOf(q)!==-1;
-      el.classList.toggle('hidden',!m); if(m)v++;
-    });
-    document.getElementById('sbCount').textContent=v;
+  function showBranchDropdown(){
+    buildBranchDropdown(document.getElementById('sbSearch').value);
   }
+
+  function filterBranches(){
+    buildBranchDropdown(document.getElementById('sbSearch').value);
+  }
+
+  function handleBranchKey(e){
+    if(e.key==='Escape'){
+      document.getElementById('branchDropdown').classList.remove('show');
+      return;
+    }
+    if(e.key==='Enter'){
+      var first=document.querySelector('.branch-option');
+      if(first){first.click();e.preventDefault();}
+    }
+  }
+
+  document.addEventListener('click',function(e){
+    var picker=document.querySelector('.branch-picker');
+    if(picker&&!picker.contains(e.target)){
+      document.getElementById('branchDropdown').classList.remove('show');
+    }
+  });
 
   function pickBranch(b){
     currentBranch=b; localStorage.setItem(BK,b);
     document.getElementById('branchName').textContent=b;
-    document.querySelectorAll('.sb-item').forEach(function(el){
-      el.classList.toggle('active',el.getAttribute('data-b')===b);
-    });
+    document.getElementById('sbSearch').value=b;
+    document.getElementById('branchDropdown').classList.remove('show');
     loadBranch(); document.getElementById('searchInput').focus();
   }
 
@@ -443,6 +440,7 @@
     var raw=document.getElementById('searchInput').value.trim();
     var kp=document.getElementById('keepParens').checked;
     var eo=document.getElementById('excludeOption').checked;
+    var ep=document.getElementById('excludePrime').checked;
     var vat=document.getElementById('vatLine').checked;
     var area=document.getElementById('resultArea'), cb=document.getElementById('copyBtn');
     var ex=[];
@@ -450,13 +448,15 @@
       var v=inp.value.trim();
       if(v)v.split(',').forEach(function(k){k=k.replace(/\s+/g,'').toLowerCase();if(k)ex.push(k);});
     });
-    if(!currentBranch){area.innerHTML='<div class="empty-state">좌측에서 지점을 선택하세요</div>';cb.classList.add('hidden');return;}
+    if(!currentBranch){area.innerHTML='<div class="empty-state">상단에서 지점을 선택하세요</div>';cb.classList.add('hidden');return;}
     if(!raw){area.innerHTML='<div class="empty-state">검색어를 입력하세요</div>';cb.classList.add('hidden');return;}
     var groups=raw.split(',').map(function(g){return g.trim();}).filter(Boolean), matched=[];
     allTreatments.forEach(function(item){
       var n=item.name.trim();
       if(eo&&/^옵션\d+\)/i.test(n))return;
       var nl=n.replace(/\s+/g,'').toLowerCase();
+      // '프라임타임'과 '프라임 타임'을 모두 동일하게 인식하여 제외
+      if(ep && nl.indexOf('프라임타임') !== -1)return;
       if(ex.length&&ex.some(function(e){return nl.indexOf(e)!==-1;}))return;
       var hit=groups.some(function(g){
         return g.split(/\s+/).filter(Boolean).every(function(k){return nl.indexOf(k.toLowerCase())!==-1;});
@@ -482,9 +482,9 @@
   function fbCopy(t){var e=document.createElement('textarea');e.value=t;document.body.appendChild(e);e.select();try{document.execCommand('copy');showToast();}catch(x){}document.body.removeChild(e);}
   function showToast(){var t=document.getElementById('toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}
 
-  buildSb();
   var saved=localStorage.getItem(BK);
   if(saved)pickBranch(saved);
+  else buildBranchDropdown('');
 </script>
 </body>
 </html>
