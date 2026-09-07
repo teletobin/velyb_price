@@ -39,9 +39,10 @@
     .top-bar {
       display: flex; align-items: center; justify-content: space-between; gap: 24px;
       padding: 14px max(24px, calc((100% - 748px) / 2));
-      border-bottom: 2px solid #FFE8F2;
+      border-bottom: 3px solid #FFE8F2;
       position: sticky; top: 0; z-index: 200;
       background: var(--bg);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
     }
     .top-logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
     .top-logo img { height: 36px; }
@@ -183,15 +184,31 @@
     }
 
     .opt input { accent-color: #777; width: 15px; height: 15px; margin: 0; }
-    .btn-copy {
-      border: 1px solid #ddd; cursor: pointer;
-      background: #fff; color: #555;
-      padding: 8px 20px; border-radius: 8px;
-      font-size: 12px; font-weight: 700;
-      transition: all 0.15s;
-    }
-    .btn-copy:hover { background: #fff; border-color: #ccc; }
-    .btn-copy.hidden { display: none; }
+   .btn-copy {
+  border: 1px solid #6f6864;
+  cursor: pointer;
+  background: #6f6864;
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+
+.btn-copy:hover {
+  background: #5f5854;
+  border-color: #5f5854;
+}
+
+.btn-copy.copied {
+  background: #5f5854;
+  border-color: #5f5854;
+}
+
+.btn-copy.hidden {
+  display: none;
+}
 
     /* 결과 */
     .result-area { flex: 1; display: flex; flex-direction: column; }
