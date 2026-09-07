@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>블리비 시술금액 검색</title>
+  <title>시술금액 검색</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
   <style>
     :root {
@@ -39,7 +39,7 @@
     .top-bar {
       display: flex; align-items: center; justify-content: space-between; gap: 24px;
       padding: 14px max(24px, calc((100% - 748px) / 2));
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #FFE8F2;
       position: sticky; top: 0; z-index: 200;
       background: var(--bg);
     }
@@ -53,7 +53,7 @@
     }
     .branch-picker input {
       width: 100%; padding: 10px 12px;
-      border-radius: 9px; border: 1px solid var(--border);
+      border-radius: 9px; border: 1px solid #FFE8F2;
       font-size: 13px; font-weight: 600; outline: none;
       color: var(--text); background: #fff;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -113,7 +113,7 @@
       font-size: 11px; font-weight: 600;
       transition: all 0.15s;
     }
-    .btn-update:hover { background: #f5f5f5; border-color: #ccc; color: #555; }
+    .btn-update:hover { background: #fff; border-color: #ccc; color: #555; }
     .btn-update:disabled { background: #fafafa; color: #ccc; cursor: wait; }
     .sync-time { font-size: 11px; color: #bbb; }
 
@@ -127,7 +127,7 @@
     .search-wrap { position: relative; margin-bottom: 12px; }
     .search-wrap input {
       width: 100%; padding: 14px 16px 14px 44px;
-      border-radius: 12px; border: 1.5px solid var(--border);
+      border-radius: 12px; border: 1.5px solid #FFE8F2;
       font-size: 15px; font-weight: 600; outline: none;
       background: #fff; color: var(--text);
       transition: border-color 0.2s, box-shadow 0.2s;
