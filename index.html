@@ -183,7 +183,13 @@
       font-size: 12px; font-weight: 500;
       outline: none; background: #fafafa;
     }
-    .exclude-inputs input:focus { border-color: #bbb; background: #fff; }
+    .exclude-inputs input:focus { border-color: #bbb; background: #fff; 
+
+    .sync-hint {
+  font-size: 10px;
+  color: #ccc;
+  font-weight: 500;
+}
 
     /* ── 옵션 + 상태 바 ── */
     .options-bar {
@@ -305,9 +311,10 @@
   <!-- 검색 -->
   <div class="search-section">
     <div class="search-top-info">
-      <span id="syncInfo"></span>
-      <button id="syncBtn" class="btn-sync" onclick="syncFromHomepage()">업데이트</button>
-    </div>
+  <span id="syncInfo"></span>
+  <button id="syncBtn" class="btn-sync" onclick="syncFromHomepage()">업데이트</button>
+  <span class="sync-hint">· 금액이 다르면 업데이트를 눌러주세요</span>
+</div>
     <div class="search-box">
       <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="searchInput" placeholder="시술명 검색 (예: 슈링크 한정가, 스킨보톡스)" oninput="doSearch()" autofocus>
@@ -488,7 +495,7 @@
     btn.textContent = '연동 중...';
 
     if (allTreatments.length === 0) {
-      area.innerHTML = '<div class="loading-box"><div class="spinner"></div>' + currentBranch + ' 해당 지점 홈페이지 데이터를 가져오고 있습니다...</div>';
+      area.innerHTML = '<div class="loading-box"><div class="spinner"></div>' + currentBranch + '홈페이지 데이터를 가져오고 있습니다...</div>';
     }
 
     try {
