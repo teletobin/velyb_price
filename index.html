@@ -457,26 +457,7 @@
   var currentBranch = '';
   var allTreatments = [];
 
-  var CUSTOM_DATABASE = [
-    { name: "셀바이브(프리미엄LDM) 6분 1회", price: "29,000원" },
-    { name: "셀바이브(프리미엄LDM) 6분 5회", price: "139,000원" },
-    { name: "셀바이브(프리미엄LDM) 12분 1회", price: "55,000원" },
-    { name: "셀바이브(프리미엄LDM) 12분 5회", price: "250,000원" },
-    { name: "셀바이브(프리미엄LDM) 24분 1회", price: "105,000원" },
-    { name: "셀바이브(프리미엄LDM) 24분 5회", price: "550,000원" },
-    { name: "엔바이론 이온자임(고농도 비타민 침투) 체험가", price: "69,000원" },
-    { name: "엔바이론 이온자임(고농도 비타민 침투)", price: "79,000원" },
-    { name: "엔바이론 이온자임(고농도 비타민 침투) 5회", price: "390,000원" },
-    { name: "서브시전 얼굴전체", price: "150,000원" },
-    { name: "서브시전 1부위", price: "100,000원" },
-    { name: "쥬베룩스킨 2cc 눈밑 케뉼라시술", price: "220,000원" },
-    { name: "올리디아스킨 2cc 눈밑 케뉼라시술", price: "250,000원" },
-    { name: "블리비V주사 1회", price: "100,000원" },
-    { name: "블리비V주사 3회", price: "250,000원" },
-    { name: "블리비V주사 3개월 책임제", price: "600,000원" },
-    { name: "코 조각주사 1회", price: "50,000원" },
-    { name: "코 조각주사 3회", price: "99,000원" }
-  ];
+  var CUSTOM_DATABASE = [];
 
   // ══════════════════════════════════════
   // 캐시 키
@@ -513,7 +494,7 @@
     currentBranch = branch;
     document.getElementById('onboarding').style.display = 'none';
     document.getElementById('mainScreen').classList.remove('hidden');
-    document.getElementById('branchLabel').textContent = '📍 ' + branch;
+    document.getElementById('branchLabel').textContent = branch;
     buildBranchList();
     loadBranch();
     document.getElementById('searchInput').focus();
@@ -567,7 +548,7 @@
   function selectBranch(branch) {
     currentBranch = branch;
     localStorage.setItem(BRANCH_STORAGE_KEY, branch);
-    document.getElementById('branchLabel').textContent = '📍 ' + branch;
+    document.getElementById('branchLabel').textContent = branch;
     document.querySelectorAll('.branch-item').forEach(function(el) {
       el.classList.toggle('active', el.getAttribute('data-branch') === branch);
     });
@@ -785,7 +766,7 @@
       currentBranch = saved;
       document.getElementById('onboarding').style.display = 'none';
       document.getElementById('mainScreen').classList.remove('hidden');
-      document.getElementById('branchLabel').textContent = '📍 ' + saved;
+      document.getElementById('branchLabel').textContent = saved;
       buildBranchList();
       loadBranch();
       document.getElementById('searchInput').focus();
