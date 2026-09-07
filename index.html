@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>블리비 시술검색</title>
+  <title>시술금액검색</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
   <style>
     :root {
@@ -49,6 +49,69 @@
       flex: 1;
       display: flex; flex-direction: column;
     }
+
+    /* ── 첫 방문 지점 선택 화면 ── */
+    .onboarding {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .onboarding-title {
+      font-size: 20px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .onboarding-sub {
+      font-size: 14px; color: var(--text-sub);
+      margin-bottom: 28px; font-weight: 500;
+    }
+    .onboarding-search-wrap {
+      width: 100%; max-width: 400px;
+      margin-bottom: 16px;
+    }
+    .onboarding-search-wrap input {
+      width: 100%; padding: 12px 18px;
+      border-radius: 50px;
+      border: 2px solid var(--border);
+      font-size: 14px; font-weight: 600;
+      outline: none; text-align: center;
+    }
+    .onboarding-search-wrap input:focus {
+      border-color: var(--primary);
+    }
+    .onboarding-search-wrap input::placeholder { color: #ccc; font-weight: 500; }
+    .onboarding-grid {
+      width: 100%; max-width: 500px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    @media (max-width: 480px) {
+      .onboarding-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .onboarding-btn {
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .onboarding-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+    .onboarding-btn.hidden { display: none; }
+
+    /* ── 메인 화면 (지점 선택 후) ── */
+    .main-screen { display: flex; flex-direction: column; flex: 1; }
+    .main-screen.hidden { display: none; }
 
     /* ── 지점 선택 드롭다운 ── */
     .branch-selector {
@@ -126,9 +189,7 @@
     .branch-item.hidden { display: none; }
 
     /* ── 검색 영역 ── */
-    .search-section {
-      margin-bottom: 16px;
-    }
+    .search-section { margin-bottom: 16px; }
     .search-top-info {
       display: flex;
       align-items: center;
@@ -137,6 +198,13 @@
       font-size: 11px;
       color: #bbb;
       font-weight: 500;
+      flex-wrap: wrap;
+    }
+    .sync-hint {
+      font-size: 10px;
+      color: #ccc;
+      font-weight: 500;
+      line-height: 1.4;
     }
     .search-box {
       position: relative;
@@ -183,15 +251,9 @@
       font-size: 12px; font-weight: 500;
       outline: none; background: #fafafa;
     }
-    .exclude-inputs input:focus { border-color: #bbb; background: #fff; 
+    .exclude-inputs input:focus { border-color: #bbb; background: #fff; }
 
-    .sync-hint {
-  font-size: 10px;
-  color: #ccc;
-  font-weight: 500;
-}
-
-    /* ── 옵션 + 상태 바 ── */
+    /* ── 옵션 바 ── */
     .options-bar {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
@@ -249,8 +311,7 @@
       padding: 6px 14px; border-radius: 50px;
       font-size: 13px; font-weight: 700;
       box-shadow: 0 2px 6px rgba(216, 27, 96, 0.2);
-      transition: all 0.2s;
-      white-space: nowrap;
+      transition: all 0.2s; white-space: nowrap;
     }
     .btn-copy.hidden { display: none; }
     .btn-copy:hover { background: #ad1457; }
@@ -294,65 +355,79 @@
 
 <div class="container">
 
-  <!-- 지점 선택 -->
-  <div class="branch-selector" id="branchSelector">
-    <button class="branch-button" id="branchButton" onclick="toggleBranchDropdown()">
-      <span id="branchLabel">홍대점</span>
-      <span class="branch-arrow">▼</span>
-    </button>
-    <div class="branch-dropdown" id="branchDropdown">
-      <div class="branch-search-wrap">
-        <input type="text" id="branchSearchInput" placeholder="지점 검색" oninput="filterBranches()">
-      </div>
-      <div class="branch-list" id="branchList"></div>
+  <!-- ★ 첫 방문: 지점 선택 화면 -->
+  <div class="onboarding" id="onboarding">
+    <div class="onboarding-title">지점을 선택해주세요</div>
+    <div class="onboarding-sub">지점을 선택하면 홈페이지 데이터가 자동 연동됩니다</div>
+    <div class="onboarding-search-wrap">
+      <input type="text" id="onboardingSearch" placeholder="지점 검색하기" oninput="filterOnboarding()">
     </div>
+    <div class="onboarding-grid" id="onboardingGrid"></div>
   </div>
 
-  <!-- 검색 -->
-  <div class="search-section">
-    <div class="search-top-info">
-  <span id="syncInfo"></span>
-  <button id="syncBtn" class="btn-sync" onclick="syncFromHomepage()">업데이트</button>
-  <span class="sync-hint">· 금액이 다르면 업데이트를 눌러주세요</span>
-</div>
-    <div class="search-box">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="시술명 검색 (예: 슈링크 한정가, 스킨보톡스)" oninput="doSearch()" autofocus>
-    </div>
-    <div class="exclude-section">
-      <div class="exclude-label">제외</div>
-      <div class="exclude-inputs">
-        <input type="text" class="exclude-field" placeholder="제외 1" oninput="doSearch()">
-        <input type="text" class="exclude-field" placeholder="제외 2" oninput="doSearch()">
-        <input type="text" class="exclude-field" placeholder="제외 3" oninput="doSearch()">
+  <!-- ★ 메인 화면 (지점 선택 후) -->
+  <div class="main-screen hidden" id="mainScreen">
+
+    <!-- 지점 선택 드롭다운 -->
+    <div class="branch-selector" id="branchSelector">
+      <button class="branch-button" id="branchButton" onclick="toggleBranchDropdown()">
+        <span id="branchLabel">홍대점</span>
+        <span class="branch-arrow">▼</span>
+      </button>
+      <div class="branch-dropdown" id="branchDropdown">
+        <div class="branch-search-wrap">
+          <input type="text" id="branchSearchInput" placeholder="지점 검색하기" oninput="filterBranches()">
+        </div>
+        <div class="branch-list" id="branchList"></div>
       </div>
     </div>
-  </div>
 
-  <!-- 옵션 -->
-  <div class="options-bar">
-    <div class="options-left">
-      <label class="option-toggle">
-        <input type="checkbox" id="keepParens" checked onchange="doSearch()">
-        <span>괄호속 텍스트 유지</span>
-      </label>
-      <label class="option-toggle">
-        <input type="checkbox" id="excludeOptionItem" checked onchange="doSearch()">
-        <span>옵션 시술 제외</span>
-      </label>
-      <label class="option-toggle">
-        <input type="checkbox" id="vatLine" checked onchange="doSearch()">
-        <span>부가세 안내</span>
-      </label>
+    <!-- 검색 -->
+    <div class="search-section">
+      <div class="search-top-info">
+        <span id="syncInfo"></span>
+        <button id="syncBtn" class="btn-sync" onclick="syncFromHomepage()">업데이트</button>
+        <span class="sync-hint">· 홈페이지에 새로운 수가가 올라오면 업데이트 버튼을 눌러 데이터를 연동해주세요 (10초 정도 소요)</span>
+      </div>
+      <div class="search-box">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="시술명 검색 (예: 슈링크 한정가, 스킨보톡스)" oninput="doSearch()">
+      </div>
+      <div class="exclude-section">
+        <div class="exclude-label">제외</div>
+        <div class="exclude-inputs">
+          <input type="text" class="exclude-field" placeholder="제외 1" oninput="doSearch()">
+          <input type="text" class="exclude-field" placeholder="제외 2" oninput="doSearch()">
+          <input type="text" class="exclude-field" placeholder="제외 3" oninput="doSearch()">
+        </div>
+      </div>
     </div>
-    <div class="options-right">
-      <button id="copyBtn" class="btn-copy hidden" onclick="copyResults()">텍스트 복사</button>
-    </div>
-  </div>
 
-  <!-- 결과 -->
-  <div id="resultArea" class="result-area">
-    <div class="result-placeholder">시술명을 입력하세요</div>
+    <!-- 옵션 -->
+    <div class="options-bar">
+      <div class="options-left">
+        <label class="option-toggle">
+          <input type="checkbox" id="keepParens" checked onchange="doSearch()">
+          <span>괄호속 텍스트 유지</span>
+        </label>
+        <label class="option-toggle">
+          <input type="checkbox" id="excludeOptionItem" checked onchange="doSearch()">
+          <span>옵션 시술 제외</span>
+        </label>
+        <label class="option-toggle">
+          <input type="checkbox" id="vatLine" checked onchange="doSearch()">
+          <span>부가세 안내</span>
+        </label>
+      </div>
+      <div class="options-right">
+        <button id="copyBtn" class="btn-copy hidden" onclick="copyResults()">텍스트 복사</button>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div id="resultArea" class="result-area">
+      <div class="result-placeholder">검색창에 시술명을 입력하세요</div>
+    </div>
   </div>
 
 </div>
@@ -363,8 +438,7 @@
 <script>
   var API_BASE = 'https://autochart-two.vercel.app';
 
-  // ── 전체 지점 목록 ──
- var ALL_BRANCHES = [
+  var ALL_BRANCHES = [
     "강남역점","건대점","경기 광주점","경주점","광명점","광주점","광주 첨단점",
     "구로점","구리점","구미점","김포점","김해점","노원점",
     "대구 동성로점","대전점","동탄점","리저브 청담점","마산점","명동점",
@@ -379,14 +453,51 @@
     "평택점","포항점","하남 미사점","홍대점"
   ];
 
-  var currentBranch = '홍대점';
+  var BRANCH_STORAGE_KEY = 'velyb_selected_branch';
+  var currentBranch = '';
   var allTreatments = [];
 
-    // ══════════════════════════════════════
-  // 지점별 캐시 키
+  
   // ══════════════════════════════════════
-  function cacheKey(branch)     { return 'velyb_data_'  + branch; }
-  function cacheTimeKey(branch) { return 'velyb_time_'  + branch; }
+  // 캐시 키
+  // ══════════════════════════════════════
+  function cacheKey(branch)     { return 'velyb_data_' + branch; }
+  function cacheTimeKey(branch) { return 'velyb_time_' + branch; }
+
+  // ══════════════════════════════════════
+  // 온보딩 (첫 방문 지점 선택)
+  // ══════════════════════════════════════
+  function buildOnboarding() {
+    var grid = document.getElementById('onboardingGrid');
+    grid.innerHTML = '';
+    ALL_BRANCHES.forEach(function(b) {
+      var btn = document.createElement('button');
+      btn.className = 'onboarding-btn';
+      btn.textContent = b;
+      btn.setAttribute('data-branch', b);
+      btn.onclick = function() { onboardSelect(b); };
+      grid.appendChild(btn);
+    });
+  }
+
+  function filterOnboarding() {
+    var q = document.getElementById('onboardingSearch').value.trim().toLowerCase();
+    document.querySelectorAll('.onboarding-btn').forEach(function(btn) {
+      var name = btn.getAttribute('data-branch').toLowerCase();
+      btn.classList.toggle('hidden', q && name.indexOf(q) === -1);
+    });
+  }
+
+  function onboardSelect(branch) {
+    localStorage.setItem(BRANCH_STORAGE_KEY, branch);
+    currentBranch = branch;
+    document.getElementById('onboarding').style.display = 'none';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    document.getElementById('branchLabel').textContent = '' + branch;
+    buildBranchList();
+    loadBranch();
+    document.getElementById('searchInput').focus();
+  }
 
   // ══════════════════════════════════════
   // 지점 드롭다운
@@ -427,34 +538,26 @@
 
   function filterBranches() {
     var query = document.getElementById('branchSearchInput').value.trim().toLowerCase();
-    var items = document.querySelectorAll('.branch-item');
-    items.forEach(function(el) {
+    document.querySelectorAll('.branch-item').forEach(function(el) {
       var name = el.getAttribute('data-branch').toLowerCase();
-      if (!query || name.indexOf(query) !== -1) {
-        el.classList.remove('hidden');
-      } else {
-        el.classList.add('hidden');
-      }
+      el.classList.toggle('hidden', query && name.indexOf(query) === -1);
     });
   }
 
   function selectBranch(branch) {
     currentBranch = branch;
+    localStorage.setItem(BRANCH_STORAGE_KEY, branch);
     document.getElementById('branchLabel').textContent = '📍 ' + branch;
-
-    // active 표시 갱신
     document.querySelectorAll('.branch-item').forEach(function(el) {
       el.classList.toggle('active', el.getAttribute('data-branch') === branch);
     });
-
     closeBranchDropdown();
     loadBranch();
   }
 
-  // 드롭다운 바깥 클릭 시 닫기
   document.addEventListener('click', function(e) {
     var sel = document.getElementById('branchSelector');
-    if (!sel.contains(e.target)) closeBranchDropdown();
+    if (sel && !sel.contains(e.target)) closeBranchDropdown();
   });
 
   // ══════════════════════════════════════
@@ -468,7 +571,7 @@
         updateSyncInfo();
         doSearch();
         return;
-      } catch(e) { /* 캐시 깨짐 → 새로 가져오기 */ }
+      } catch(e) { /* 캐시 깨짐 */ }
     }
     syncFromHomepage();
   }
@@ -495,7 +598,7 @@
     btn.textContent = '연동 중...';
 
     if (allTreatments.length === 0) {
-      area.innerHTML = '<div class="loading-box"><div class="spinner"></div>' + currentBranch + '홈페이지 데이터를 가져오고 있습니다...</div>';
+      area.innerHTML = '<div class="loading-box"><div class="spinner"></div>' + currentBranch + ' 시술 데이터를 가져오고 있습니다...</div>';
     }
 
     try {
@@ -573,12 +676,10 @@
     }
 
     var orGroups = raw.split(',').map(function(g) { return g.trim(); }).filter(function(g) { return g.length > 0; });
-
     var matched = [];
 
     allTreatments.forEach(function(item) {
       var rawName = item.name.trim();
-
       if (excludeOptionItem && /^옵션\d+\)/i.test(rawName)) return;
 
       var nameLower = rawName.replace(/\s+/g, "").toLowerCase();
@@ -653,9 +754,28 @@
     setTimeout(function(){ toast.classList.remove('show'); }, 2000);
   }
 
-  // ── 시작 ──
-  buildBranchList();
-  loadBranch();
+  // ══════════════════════════════════════
+  // 초기화
+  // ══════════════════════════════════════
+  function init() {
+    var saved = localStorage.getItem(BRANCH_STORAGE_KEY);
+
+    if (saved) {
+      // 재방문: 저장된 지점으로 바로 진입
+      currentBranch = saved;
+      document.getElementById('onboarding').style.display = 'none';
+      document.getElementById('mainScreen').classList.remove('hidden');
+      document.getElementById('branchLabel').textContent = '📍 ' + saved;
+      buildBranchList();
+      loadBranch();
+      document.getElementById('searchInput').focus();
+    } else {
+      // 첫 방문: 지점 선택 화면
+      buildOnboarding();
+    }
+  }
+
+  init();
 </script>
 </body>
 </html>
