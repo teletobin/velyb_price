@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>블리비 시술검색</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <style>
+    :root {
+      --primary: #f06292;
+      --primary-dark: #d81b60;
+      --primary-light: #fce4ec;
+      --text: #424242;
+      --text-sub: #757575;
+      --border: rgba(240, 98, 146, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif !important;
+      color: var(--text);
+    }
+
+    body {
+      margin: 0; padding: 0;
+      background: #fff;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    header {
+      padding: 14px 20px;
+      text-align: center;
+      background: var(--primary-light);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 200;
+    }
+    header h1 {
+      margin: 0; font-size: 18px; font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      width: 100%;
+      flex: 1;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── 지점 선택 드롭다운 ── */
+    .branch-selector {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .branch-button {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 14px; font-weight: 700;
+      color: var(--primary-dark);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .branch-button:hover { border-color: var(--primary); }
+    .branch-button.open { border-color: var(--primary); border-radius: 12px 12px 0 0; }
+    .branch-arrow {
+      font-size: 10px; color: #bbb;
+      transition: transform 0.2s;
+    }
+    .branch-button.open .branch-arrow { transform: rotate(180deg); }
+
+    .branch-dropdown {
+      display: none;
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1.5px solid var(--primary);
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      max-height: 280px;
+      overflow: hidden;
+      z-index: 150;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      flex-direction: column;
+    }
+    .branch-dropdown.open { display: flex; }
+
+    .branch-search-wrap {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f0f0f0;
+      position: sticky; top: 0;
+      background: #fff; z-index: 1;
+    }
+    .branch-search-wrap input {
+      width: 100%; padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      font-size: 13px; font-weight: 500;
+      outline: none; background: #fafafa;
+    }
+    .branch-search-wrap input:focus { border-color: var(--primary); background: #fff; }
+
+    .branch-list {
+      overflow-y: auto;
+      max-height: 220px;
+    }
+    .branch-item {
+      padding: 10px 16px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: background 0.1s;
+      border: none; background: none;
+      width: 100%; text-align: left;
+    }
+    .branch-item:hover { background: var(--primary-light); }
+    .branch-item.active {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+    .branch-item.hidden { display: none; }
+
+    /* ── 검색 영역 ── */
+    .search-section {
+      margin-bottom: 16px;
+    }
+    .search-top-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: #bbb;
+      font-weight: 500;
+    }
+    .search-box {
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 14px 18px 14px 44px;
+      border-radius: 50px;
+      border: 2px solid var(--border);
+      font-size: 15px; font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #fff;
+    }
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(240, 98, 146, 0.08);
+    }
+    .search-box input::placeholder { color: #bbb; font-weight: 500; }
+    .search-icon {
+      position: absolute; left: 16px; top: 50%;
+      transform: translateY(-50%);
+      width: 18px; height: 18px;
+      color: #bbb; pointer-events: none;
+    }
+
+    .exclude-section {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .exclude-label {
+      font-size: 13px; font-weight: 700; color: var(--text-sub);
+      white-space: nowrap; width: 32px; text-align: center;
+    }
+    .exclude-inputs {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 6px; flex: 1;
+    }
+    .exclude-inputs input {
+      width: 100%; padding: 8px 12px;
+      border-radius: 50px;
+      border: 1px solid #e0e0e0;
+      font-size: 12px; font-weight: 500;
+      outline: none; background: #fafafa;
+    }
+    .exclude-inputs input:focus { border-color: #bbb; background: #fff; }
+
+    /* ── 옵션 + 상태 바 ── */
+    .options-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; flex-wrap: wrap; gap: 8px;
+    }
+    .options-left {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .option-toggle {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 13px; font-weight: 600; color: var(--text-sub);
+      cursor: pointer; user-select: none;
+    }
+    .option-toggle input {
+      accent-color: var(--primary);
+      width: 14px; height: 14px; margin: 0;
+    }
+    .options-right { display: flex; align-items: center; }
+    .btn-sync {
+      border: none; cursor: pointer;
+      background: none; color: var(--primary-dark);
+      font-size: 11px; font-weight: 700;
+      text-decoration: underline; padding: 0;
+    }
+    .btn-sync:hover { color: #ad1457; }
+    .btn-sync:disabled { color: #ccc; cursor: wait; }
+
+    /* ── 결과 영역 ── */
+    .result-area {
+      flex: 1; display: flex; flex-direction: column;
+      min-height: 300px;
+    }
+    .result-box {
+      flex: 1; width: 100%;
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      font-size: 14px; line-height: 1.8;
+      resize: none; outline: none;
+      background: #fffafa;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+    .result-box:focus { border-color: var(--primary); background: #fff; }
+    .result-placeholder {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: #ccc; font-size: 14px; font-weight: 500;
+      min-height: 300px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+    }
+
+    .btn-copy {
+      border: none; cursor: pointer;
+      background: var(--primary-dark); color: white;
+      padding: 6px 14px; border-radius: 50px;
+      font-size: 13px; font-weight: 700;
+      box-shadow: 0 2px 6px rgba(216, 27, 96, 0.2);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-copy.hidden { display: none; }
+    .btn-copy:hover { background: #ad1457; }
+
+    /* ── 로딩 ── */
+    .loading-box {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 300px; color: var(--primary-dark);
+      font-size: 14px; font-weight: 600; gap: 12px;
+    }
+    .spinner {
+      width: 24px; height: 24px;
+      border: 3px solid var(--primary-light);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #toast {
+      position: fixed; bottom: 30px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #333; color: white; padding: 10px 24px;
+      border-radius: 50px; font-size: 13px;
+      transition: transform 0.3s ease; z-index: 1000;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    footer {
+      padding: 16px 0; text-align: center;
+      font-size: 12px; color: #ccc; font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>블리비 시술금액 검색(홈페이지 연동)</h1>
+</header>
+
+<div class="container">
+
+  <!-- 지점 선택 -->
+  <div class="branch-selector" id="branchSelector">
+    <button class="branch-button" id="branchButton" onclick="toggleBranchDropdown()">
+      <span id="branchLabel">홍대점</span>
+      <span class="branch-arrow">▼</span>
+    </button>
+    <div class="branch-dropdown" id="branchDropdown">
+      <div class="branch-search-wrap">
+        <input type="text" id="branchSearchInput" placeholder="지점 검색" oninput="filterBranches()">
+      </div>
+      <div class="branch-list" id="branchList"></div>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="search-section">
+    <div class="search-top-info">
+      <span id="syncInfo"></span>
+      <button id="syncBtn" class="btn-sync" onclick="syncFromHomepage()">업데이트</button>
+    </div>
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="시술명 검색 (예: 슈링크 한정가, 스킨보톡스)" oninput="doSearch()" autofocus>
+    </div>
+    <div class="exclude-section">
+      <div class="exclude-label">제외</div>
+      <div class="exclude-inputs">
+        <input type="text" class="exclude-field" placeholder="제외 1" oninput="doSearch()">
+        <input type="text" class="exclude-field" placeholder="제외 2" oninput="doSearch()">
+        <input type="text" class="exclude-field" placeholder="제외 3" oninput="doSearch()">
+      </div>
+    </div>
+  </div>
+
+  <!-- 옵션 -->
+  <div class="options-bar">
+    <div class="options-left">
+      <label class="option-toggle">
+        <input type="checkbox" id="keepParens" checked onchange="doSearch()">
+        <span>괄호속 텍스트 유지</span>
+      </label>
+      <label class="option-toggle">
+        <input type="checkbox" id="excludeOptionItem" checked onchange="doSearch()">
+        <span>옵션 시술 제외</span>
+      </label>
+      <label class="option-toggle">
+        <input type="checkbox" id="vatLine" checked onchange="doSearch()">
+        <span>부가세 안내</span>
+      </label>
+    </div>
+    <div class="options-right">
+      <button id="copyBtn" class="btn-copy hidden" onclick="copyResults()">텍스트 복사</button>
+    </div>
+  </div>
+
+  <!-- 결과 -->
+  <div id="resultArea" class="result-area">
+    <div class="result-placeholder">시술명을 입력하세요</div>
+  </div>
+
+</div>
+
+<footer>&copy; 2026. Designed & Developed by EUNBIN GA</footer>
+<div id="toast">복사 완료!</div>
+
+<script>
+  var API_BASE = 'https://autochart-two.vercel.app';
+
+  // ── 전체 지점 목록 ──
+ var ALL_BRANCHES = [
+    "강남역점","건대점","경기 광주점","경주점","광명점","광주점","광주 첨단점",
+    "구로점","구리점","구미점","김포점","김해점","노원점",
+    "대구 동성로점","대전점","동탄점","리저브 청담점","마산점","명동점",
+    "목동점","발산점","부산 경성대점","부산 남포점","부산 덕천점",
+    "부산 서면점","부산 센텀점","부천점","분당점",
+    "성남 모란점","세종점","수원점","수원 인계점","순천점","시흥점",
+    "안산점","안양점","양산점","영등포점","연신내점",
+    "용산점","용인 수지점","왕십리점","울산점","원주점",
+    "의정부점","인천 검단점","인천 구월점","인천 부평점","일산점",
+    "잠실점","전주점","제주점","진주점","창원점",
+    "천안점","천안 불당점","청량리점","청주점","춘천점",
+    "평택점","포항점","하남 미사점","홍대점"
+  ];
+
+  var currentBranch = '홍대점';
+  var allTreatments = [];
+
+    // ══════════════════════════════════════
+  // 지점별 캐시 키
+  // ══════════════════════════════════════
+  function cacheKey(branch)     { return 'velyb_data_'  + branch; }
+  function cacheTimeKey(branch) { return 'velyb_time_'  + branch; }
+
+  // ══════════════════════════════════════
+  // 지점 드롭다운
+  // ══════════════════════════════════════
+  function buildBranchList() {
+    var list = document.getElementById('branchList');
+    list.innerHTML = '';
+    ALL_BRANCHES.forEach(function(b) {
+      var div = document.createElement('div');
+      div.className = 'branch-item' + (b === currentBranch ? ' active' : '');
+      div.textContent = b;
+      div.setAttribute('data-branch', b);
+      div.onclick = function() { selectBranch(b); };
+      list.appendChild(div);
+    });
+  }
+
+  function toggleBranchDropdown() {
+    var btn = document.getElementById('branchButton');
+    var dd  = document.getElementById('branchDropdown');
+    var isOpen = dd.classList.contains('open');
+    if (isOpen) {
+      dd.classList.remove('open');
+      btn.classList.remove('open');
+    } else {
+      dd.classList.add('open');
+      btn.classList.add('open');
+      document.getElementById('branchSearchInput').value = '';
+      filterBranches();
+      document.getElementById('branchSearchInput').focus();
+    }
+  }
+
+  function closeBranchDropdown() {
+    document.getElementById('branchDropdown').classList.remove('open');
+    document.getElementById('branchButton').classList.remove('open');
+  }
+
+  function filterBranches() {
+    var query = document.getElementById('branchSearchInput').value.trim().toLowerCase();
+    var items = document.querySelectorAll('.branch-item');
+    items.forEach(function(el) {
+      var name = el.getAttribute('data-branch').toLowerCase();
+      if (!query || name.indexOf(query) !== -1) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    });
+  }
+
+  function selectBranch(branch) {
+    currentBranch = branch;
+    document.getElementById('branchLabel').textContent = '📍 ' + branch;
+
+    // active 표시 갱신
+    document.querySelectorAll('.branch-item').forEach(function(el) {
+      el.classList.toggle('active', el.getAttribute('data-branch') === branch);
+    });
+
+    closeBranchDropdown();
+    loadBranch();
+  }
+
+  // 드롭다운 바깥 클릭 시 닫기
+  document.addEventListener('click', function(e) {
+    var sel = document.getElementById('branchSelector');
+    if (!sel.contains(e.target)) closeBranchDropdown();
+  });
+
+  // ══════════════════════════════════════
+  // 데이터 로드
+  // ══════════════════════════════════════
+  function loadBranch() {
+    var cached = localStorage.getItem(cacheKey(currentBranch));
+    if (cached) {
+      try {
+        mergeTreatments(JSON.parse(cached));
+        updateSyncInfo();
+        doSearch();
+        return;
+      } catch(e) { /* 캐시 깨짐 → 새로 가져오기 */ }
+    }
+    syncFromHomepage();
+  }
+
+  function mergeTreatments(homepageData) {
+    var map = new Map();
+    CUSTOM_DATABASE.forEach(function(item) {
+      map.set(item.name.replace(/\s+/g,"").toLowerCase(), item);
+    });
+    homepageData.forEach(function(item) {
+      map.set(item.name.replace(/\s+/g,"").toLowerCase(), item);
+    });
+    allTreatments = Array.from(map.values());
+  }
+
+  // ══════════════════════════════════════
+  // 홈페이지 연동
+  // ══════════════════════════════════════
+  async function syncFromHomepage() {
+    var btn = document.getElementById('syncBtn');
+    var area = document.getElementById('resultArea');
+
+    btn.disabled = true;
+    btn.textContent = '연동 중...';
+
+    if (allTreatments.length === 0) {
+      area.innerHTML = '<div class="loading-box"><div class="spinner"></div>' + currentBranch + ' 해당 지점 홈페이지 데이터를 가져오고 있습니다...</div>';
+    }
+
+    try {
+      var url = API_BASE + '/api/scrape-velyb?etc5=' + encodeURIComponent(currentBranch);
+      var res = await fetch(url);
+      var data = await res.json();
+
+      if (data.error) {
+        if (allTreatments.length === 0) {
+          area.innerHTML = '<div class="result-placeholder">데이터를 가져오지 못했습니다. 다시 시도해주세요.</div>';
+        }
+        return;
+      }
+
+      var treatments = data.treatments || [];
+      localStorage.setItem(cacheKey(currentBranch), JSON.stringify(treatments));
+      localStorage.setItem(cacheTimeKey(currentBranch), new Date().toISOString());
+
+      mergeTreatments(treatments);
+      updateSyncInfo();
+      doSearch();
+
+    } catch (e) {
+      if (allTreatments.length === 0) {
+        area.innerHTML = '<div class="result-placeholder">네트워크 오류. 다시 시도해주세요.</div>';
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '업데이트';
+    }
+  }
+
+  function updateSyncInfo() {
+    var info = document.getElementById('syncInfo');
+    var timeStr = localStorage.getItem(cacheTimeKey(currentBranch));
+    if (!timeStr) { info.textContent = ''; return; }
+
+    var diff = Date.now() - new Date(timeStr).getTime();
+    var min = Math.floor(diff / 60000);
+    var hr  = Math.floor(diff / 3600000);
+    var day = Math.floor(diff / 86400000);
+
+    var ago = min < 1 ? '방금' : min < 60 ? min + '분 전' : hr < 24 ? hr + '시간 전' : day + '일 전';
+    info.textContent = '연동: ' + ago;
+    info.style.color = day >= 14 ? '#e65100' : '#bbb';
+    if (day >= 14) info.textContent += ' ⚠️';
+  }
+
+  // ══════════════════════════════════════
+  // 검색
+  // ══════════════════════════════════════
+  function doSearch() {
+    var raw = document.getElementById('searchInput').value.trim();
+    var keepParens = document.getElementById('keepParens').checked;
+    var excludeOptionItem = document.getElementById('excludeOptionItem').checked;
+    var useVat = document.getElementById('vatLine').checked;
+    var area = document.getElementById('resultArea');
+    var copyBtn = document.getElementById('copyBtn');
+
+    var excludeTokens = [];
+    document.querySelectorAll('.exclude-field').forEach(function(input) {
+      var val = input.value.trim();
+      if (val) {
+        val.split(',').forEach(function(k) {
+          k = k.replace(/\s+/g,"").toLowerCase();
+          if (k) excludeTokens.push(k);
+        });
+      }
+    });
+
+    if (!raw) {
+      area.innerHTML = '<div class="result-placeholder">검색창에 시술명을 입력하세요</div>';
+      copyBtn.classList.add('hidden');
+      return;
+    }
+
+    var orGroups = raw.split(',').map(function(g) { return g.trim(); }).filter(function(g) { return g.length > 0; });
+
+    var matched = [];
+
+    allTreatments.forEach(function(item) {
+      var rawName = item.name.trim();
+
+      if (excludeOptionItem && /^옵션\d+\)/i.test(rawName)) return;
+
+      var nameLower = rawName.replace(/\s+/g, "").toLowerCase();
+
+      if (excludeTokens.length > 0) {
+        var excluded = excludeTokens.some(function(ex) { return nameLower.indexOf(ex) !== -1; });
+        if (excluded) return;
+      }
+
+      var isMatched = orGroups.some(function(group) {
+        var keywords = group.split(/\s+/).filter(function(k) { return k.length > 0; });
+        return keywords.every(function(kw) {
+          return nameLower.indexOf(kw.toLowerCase()) !== -1;
+        });
+      });
+
+      if (isMatched) matched.push(item);
+    });
+
+    if (matched.length === 0) {
+      area.innerHTML = '<div class="result-placeholder">검색 결과가 없습니다</div>';
+      copyBtn.classList.add('hidden');
+      return;
+    }
+
+    var lines = matched.map(function(item) {
+      var displayName = cleanName(item.name, keepParens);
+      return displayName + ' ' + item.price;
+    });
+
+    var text = lines.join('\n');
+    if (useVat) text += '\n\n부가세 10% 별도입니다 😊';
+
+    area.innerHTML = '<textarea class="result-box" id="resultBox">' + escapeHtml(text) + '</textarea>';
+    copyBtn.classList.remove('hidden');
+  }
+
+  // ── 유틸 ──
+  function cleanName(name, keepParens) {
+    var n = name;
+    if (!keepParens) {
+      n = n.replace(/\([^)]*\)/g, "");
+      n = n.replace(/\[[^\]]*\]/g, "");
+    }
+    return n.replace(/\s+/g, " ").trim();
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function copyResults() {
+    var box = document.getElementById('resultBox');
+    if (!box) return;
+    var text = box.value;
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(showToast).catch(function(){ fallbackCopy(text); });
+    } else { fallbackCopy(text); }
+  }
+
+  function fallbackCopy(text) {
+    var t = document.createElement("textarea"); t.value = text;
+    document.body.appendChild(t); t.select();
+    try { document.execCommand('copy'); showToast(); } catch(e){}
+    document.body.removeChild(t);
+  }
+
+  function showToast() {
+    var toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 2000);
+  }
+
+  // ── 시작 ──
+  buildBranchList();
+  loadBranch();
+</script>
+</body>
+</html>
