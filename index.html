@@ -11,7 +11,7 @@
       --primary-soft: #8f8781;
       --primary-light: #e9e5e2;
       --primary-bg: #FFE8F2;
-      --result-bg: rgba(255,232,242,0.30);
+      --result-bg: rgba(233,229,226,0.35);
       --text: #1a1a1a;
       --text-sub: #817a75;
       --bg: #fff;
@@ -37,7 +37,7 @@
     /* ═══ 헤더 (전체 폭으로 끊기지 않게, 콘텐츠만 중앙 정렬) ═══ */
     .top-bar {
       width: 100%;
-      border-bottom: 1px solid var(--primary-light);
+      border-bottom: 2px solid var(--primary-light);
       position: sticky; top: 0; z-index: 200;
       background: var(--bg);
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
@@ -49,8 +49,8 @@
       padding: 14px 36px;
     }
     .top-logo { display: flex; align-items: center; gap: 12px; flex-shrink: 1; min-width: 0; }
-    .top-logo img { height: 36px; flex-shrink: 0; }
-    .top-logo-text { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top-logo img { height: 42px; flex-shrink: 0; }
+    .top-logo-text { font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .branch-picker {
       position: relative;
@@ -62,8 +62,12 @@
       border: none; border-bottom: 1.5px solid var(--border);
       border-radius: 0;
       font-size: 13px; font-weight: 600; outline: none;
-      color: --primary: #6f6864; background: transparent;
+      color: var(--text); background: transparent;
       transition: border-color 0.2s;
+      text-align: left;
+    }
+    .branch-picker input.picked {
+      text-align: right;
     }
     .branch-picker input:focus {
       border-bottom-color: var(--primary-soft);
@@ -193,7 +197,23 @@
 }
 
     /* 결과 */
-    .result-area { flex: 1; display: flex; flex-direction: column; }
+    .result-area { flex: 1; display: flex; flex-direction: column; position: relative; }
+    .result-toolbar {
+      display: flex; justify-content: flex-end; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .btn-clear {
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #fff;
+      color: #888;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .btn-clear:hover { background: #fafafa; color: #555; }
     .result-box {
       flex: 1; width: 100%;
       padding: 18px 20px;
@@ -201,7 +221,7 @@
       font-size: 13.5px; line-height: 1.9;
       resize: none; outline: none;
       background: var(--result-bg); color: var(--text);
-      border: 1px solid rgba(255, 232, 242, 0.7);
+      border: 1px solid rgba(233, 229, 226, 0.8);
       min-height: 320px;
     }
     .result-box:focus { border-color: #e0e0e0; background: var(--result-bg); }
@@ -256,6 +276,9 @@
       .toolbar-left { gap: 12px; }
       .opt { font-size: 12px; }
     }
+    html {
+      zoom: 1.1;
+    }
   </style>
 </head>
 <body>
@@ -266,7 +289,7 @@
       <img src="logo.png" alt="velyB">
       <span class="top-logo-text">시술금액 검색</span>
     </div>
-    <div class="branch-picker">
+    <div class="branch-picker" id="sbPicker">
       <input type="text" id="sbSearch" placeholder="지점명 검색" autocomplete="off"
              oninput="filterBranches()" onfocus="showBranchDropdown()" onkeydown="handleBranchKey(event)">
       <div class="branch-dropdown" id="branchDropdown"></div>
@@ -311,7 +334,6 @@
           <label class="opt"><input type="checkbox" id="vatLine" checked onchange="doSearch()"> 부가세 안내</label>
           <label class="opt"><input type="checkbox" id="excludePrime" checked onchange="doSearch()"> 프라임타임 이벤트 제외</label>
         </div>
-        <button class="btn-copy hidden" id="copyBtn" onclick="copyResults()">결과복사</button>
       </div>
 
       <div class="result-area" id="resultArea">
@@ -366,11 +388,27 @@
   }
 
   function showBranchDropdown(){
+    enterSearchMode();
     buildBranchDropdown(document.getElementById('sbSearch').value);
   }
 
   function filterBranches(){
+    enterSearchMode();
     buildBranchDropdown(document.getElementById('sbSearch').value);
+  }
+
+  function enterSearchMode(){
+    var inp=document.getElementById('sbSearch'), picker=document.getElementById('sbPicker');
+    inp.classList.remove('picked');
+    picker.style.width='130px';
+  }
+
+  var _measureCanvas;
+  function measureTextWidth(text,font){
+    if(!_measureCanvas) _measureCanvas=document.createElement('canvas');
+    var ctx=_measureCanvas.getContext('2d');
+    ctx.font=font;
+    return ctx.measureText(text).width;
   }
 
   function handleBranchKey(e){
@@ -394,7 +432,11 @@
   function pickBranch(b){
     currentBranch=b; localStorage.setItem(BK,b);
     document.getElementById('branchName').textContent=b;
-    document.getElementById('sbSearch').value=b;
+    var inp=document.getElementById('sbSearch'), picker=document.getElementById('sbPicker');
+    inp.value=b;
+    inp.classList.add('picked');
+    var w=Math.ceil(measureTextWidth(b,'600 13px Pretendard, -apple-system, sans-serif'))+14;
+    picker.style.width=Math.max(w,40)+'px';
     document.getElementById('branchDropdown').classList.remove('show');
     loadBranch();
     var firstField=document.querySelector('.sc-field');
@@ -448,7 +490,7 @@
     var eo=document.getElementById('excludeOption').checked;
     var ep=document.getElementById('excludePrime').checked;
     var vat=document.getElementById('vatLine').checked;
-    var area=document.getElementById('resultArea'), cb=document.getElementById('copyBtn');
+    var area=document.getElementById('resultArea');
 
     // 포함(검색) 필드: 세 검색창 중 하나라도 일치하면 결과에 포함 (필드간 OR, 필드 내 쉼표도 OR)
     var scKeywords=[];
@@ -469,8 +511,8 @@
       if(v)v.split(',').forEach(function(k){k=k.replace(/\s+/g,'').toLowerCase();if(k)ex.push(k);});
     });
 
-    if(!currentBranch){area.innerHTML='<div class="empty-state">상단에서 지점을 선택하세요</div>';cb.classList.add('hidden');return;}
-    if(!scKeywords.length){area.innerHTML='<div class="empty-state">검색어를 입력하세요</div>';cb.classList.add('hidden');return;}
+    if(!currentBranch){area.innerHTML='<div class="empty-state">상단에서 지점을 선택하세요</div>';return;}
+    if(!scKeywords.length){area.innerHTML='<div class="empty-state">검색어를 입력하세요</div>';return;}
 
     var matched=[];
     allTreatments.forEach(function(item){
@@ -483,11 +525,15 @@
       var hit=scKeywords.some(function(k){return nl.indexOf(k)!==-1;});
       if(hit)matched.push(item);
     });
-    if(!matched.length){area.innerHTML='<div class="empty-state">검색 결과가 없습니다</div>';cb.classList.add('hidden');return;}
+    if(!matched.length){area.innerHTML='<div class="empty-state">검색 결과가 없습니다</div>';return;}
     var text=matched.map(function(i){return cleanName(i.name,kp)+' '+i.price;}).join('\n');
     if(vat)text+='\n\n부가세 10% 별도입니다 😊';
-    area.innerHTML='<textarea class="result-box" id="resultBox">'+esc(text)+'</textarea>';
-    cb.classList.remove('hidden');
+    area.innerHTML='<div class="result-toolbar"><button class="btn-copy" onclick="copyResults()">결과복사</button><button class="btn-clear" onclick="clearSearch()">CLEAR</button></div><textarea class="result-box" id="resultBox">'+esc(text)+'</textarea>';
+  }
+
+  function clearSearch(){
+    document.querySelectorAll('.sc-field, .ex-field').forEach(function(el){el.value='';});
+    doSearch();
   }
 
   function cleanName(n,kp){if(!kp){n=n.replace(/\([^)]*\)/g,'').replace(/\[[^\]]*\]/g,'');}return n.replace(/\s+/g,' ').trim();}
