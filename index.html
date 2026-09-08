@@ -492,14 +492,17 @@
     var vat=document.getElementById('vatLine').checked;
     var area=document.getElementById('resultArea');
 
-    // 포함(검색) 필드: 세 검색창 중 하나라도 일치하면 결과에 포함 (필드간 OR, 필드 내 쉼표도 OR)
-    var scKeywords=[];
+    // 포함(검색) 필드: 필드간 + 쉼표간은 OR, 한 검색어 안의 공백은 AND
+    // 예) "슈링크 한정가" -> 시술명 안에 '슈링크'와 '한정가'가 모두 포함된 항목만 매칭
+    var scGroups=[];
     document.querySelectorAll('.sc-field').forEach(function(inp){
       var v=inp.value.trim();
       if(v){
-        v.split(',').forEach(function(k){
-          k=k.replace(/\s+/g,'').toLowerCase();
-          if(k) scKeywords.push(k);
+        v.split(',').forEach(function(part){
+          part=part.trim();
+          if(!part)return;
+          var terms=part.split(/\s+/).map(function(t){return t.toLowerCase();}).filter(Boolean);
+          if(terms.length) scGroups.push(terms);
         });
       }
     });
@@ -512,7 +515,7 @@
     });
 
     if(!currentBranch){area.innerHTML='<div class="empty-state">상단에서 지점을 선택하세요</div>';return;}
-    if(!scKeywords.length){area.innerHTML='<div class="empty-state">검색어를 입력하세요</div>';return;}
+    if(!scGroups.length){area.innerHTML='<div class="empty-state">검색어를 입력하세요</div>';return;}
 
     var matched=[];
     allTreatments.forEach(function(item){
@@ -522,7 +525,9 @@
       // '프라임타임'과 '프라임 타임'을 모두 동일하게 인식하여 제외
       if(ep && nl.indexOf('프라임타임') !== -1)return;
       if(ex.length&&ex.some(function(e){return nl.indexOf(e)!==-1;}))return;
-      var hit=scKeywords.some(function(k){return nl.indexOf(k)!==-1;});
+      var hit=scGroups.some(function(terms){
+        return terms.every(function(t){return nl.indexOf(t)!==-1;});
+      });
       if(hit)matched.push(item);
     });
     if(!matched.length){area.innerHTML='<div class="empty-state">검색 결과가 없습니다</div>';return;}
