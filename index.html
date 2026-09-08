@@ -558,7 +558,7 @@
     var matched=[];
     allTreatments.forEach(function(item){
       var n=item.name.trim();
-      if(eo&&/^옵션\d+\)/i.test(n))return;
+      if(eo&&/^옵션\d*\)/i.test(n))return;
       var nl=n.replace(/\s+/g,'').toLowerCase();
       // '프라임타임'과 '프라임 타임'을 모두 동일하게 인식하여 제외
       if(ep && nl.indexOf('프라임타임') !== -1)return;
