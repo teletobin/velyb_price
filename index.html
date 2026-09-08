@@ -368,6 +368,8 @@
 
   function ck(b){return 'vd_'+b;} function tk(b){return 'vt_'+b;}
 
+  var branchActiveIndex=-1;
+
   function buildBranchDropdown(q){
     var box=document.getElementById('branchDropdown');
     var query=(q||'').trim().toLowerCase();
@@ -375,6 +377,7 @@
       return !query || b.toLowerCase().indexOf(query)!==-1;
     });
     box.innerHTML='';
+    branchActiveIndex=-1;
     matches.forEach(function(b){
       var btn=document.createElement('button');
       btn.type='button';
@@ -385,6 +388,18 @@
     });
     if(matches.length) box.classList.add('show');
     else box.classList.remove('show');
+  }
+
+  function highlightBranchOption(idx){
+    var options=document.querySelectorAll('.branch-option');
+    if(!options.length) return;
+    if(idx<0) idx=0;
+    if(idx>=options.length) idx=options.length-1;
+    branchActiveIndex=idx;
+    options.forEach(function(o,i){
+      if(i===idx) o.classList.add('active'); else o.classList.remove('active');
+    });
+    options[idx].scrollIntoView({block:'nearest'});
   }
 
   function showBranchDropdown(){
@@ -412,13 +427,36 @@
   }
 
   function handleBranchKey(e){
+    var options=document.querySelectorAll('.branch-option');
     if(e.key==='Escape'){
       document.getElementById('branchDropdown').classList.remove('show');
+      branchActiveIndex=-1;
+      return;
+    }
+    if(e.key==='ArrowDown'){
+      if(!options.length) return;
+      e.preventDefault();
+      highlightBranchOption(branchActiveIndex+1);
+      return;
+    }
+    if(e.key==='ArrowUp'){
+      if(!options.length) return;
+      e.preventDefault();
+      highlightBranchOption(branchActiveIndex-1);
+      return;
+    }
+    if(e.key==='Tab'){
+      if(!options.length) return;
+      e.preventDefault();
+      if(e.shiftKey) highlightBranchOption(branchActiveIndex-1);
+      else highlightBranchOption(branchActiveIndex+1);
       return;
     }
     if(e.key==='Enter'){
-      var first=document.querySelector('.branch-option');
-      if(first){first.click();e.preventDefault();}
+      if(!options.length) return;
+      e.preventDefault();
+      var idx=branchActiveIndex>=0?branchActiveIndex:0;
+      options[idx].click();
     }
   }
 
