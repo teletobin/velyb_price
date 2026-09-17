@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>시술금액 검색</title>
+  <title>시술 금액 검색</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
   <style>
     :root {
@@ -144,7 +144,26 @@
       font-size: 13px; font-weight: 700; color: #666;
       width: 44px; text-align: left; flex-shrink: 0;
       white-space: nowrap;
+      display: flex; align-items: center; gap: 4px;
     }
+
+    /* TIP 안내: 둥근 배지 + 일반 텍스트, 항상 표시 */
+    .tip-note {
+      display: flex; align-items: center; gap: 7px;
+      color: var(--text-sub);
+      font-size: 11px; font-weight: 500; line-height: 1.4;
+    }
+    .tip-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--primary-light);
+      background: transparent;
+      color: var(--primary-soft);
+      font-size: 10px; font-weight: 800;
+    }
+
     .filter-fields { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; flex: 1; }
     .filter-fields input {
       width: 100%; padding: 9px 12px;
@@ -155,7 +174,9 @@
     .filter-fields input:focus { border-color: #d5d5d5; background: #fff; }
     .filter-fields input::placeholder { color: #aaa; }
 
-    .exclude-row { margin-bottom: 16px; }
+    .exclude-row { margin-bottom: 6px; }
+    .exclude-tip-row { margin-bottom: 16px; }
+    .exclude-tip-row .filter-label { width: 44px; }
 
     /* 툴바 */
     .toolbar {
@@ -287,7 +308,7 @@
   <div class="top-bar-inner">
     <div class="top-logo">
       <img src="logo.png" alt="velyB">
-      <span class="top-logo-text">시술금액 검색</span>
+      <span class="top-logo-text">시술 금액 검색</span>
     </div>
     <div class="branch-picker" id="sbPicker">
       <input type="text" id="sbSearch" placeholder="지점명 검색" autocomplete="off"
@@ -325,6 +346,10 @@
           <input type="text" class="ex-field" placeholder="제외어2" oninput="doSearch()">
           <input type="text" class="ex-field" placeholder="제외어3" oninput="doSearch()">
         </div>
+      </div>
+      <div class="filter-row exclude-tip-row">
+        <span class="filter-label"></span>
+        <div class="tip-note"><span class="tip-badge">TIP!</span>검색결과에서 제외할 단어를 입력해주세요. 하나의 제외어 칸 안에서 콤마(,)로도 구분 가능합니다.</div>
       </div>
 
       <div class="toolbar">
