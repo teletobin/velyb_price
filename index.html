@@ -616,6 +616,18 @@
   function fbCopy(t){var e=document.createElement('textarea');e.value=t;document.body.appendChild(e);e.select();try{document.execCommand('copy');showToast();}catch(x){}document.body.removeChild(e);}
   function showToast(){var t=document.getElementById('toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}
 
+  function autoSyncDaily(){
+    var now=new Date();
+    if(now.getHours()!==10)return;
+    var lastSync=localStorage.getItem('_lastDailySync');
+    var today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+    if(lastSync===today)return;
+    if(currentBranch)syncFromHomepage();
+    localStorage.setItem('_lastDailySync',today);
+  }
+  setInterval(autoSyncDaily,60000);
+  autoSyncDaily();
+
   var saved=localStorage.getItem(BK);
   if(saved)pickBranch(saved);
   else buildBranchDropdown('');
